@@ -9,8 +9,7 @@ jobs:
   build_and_test:
     runs-on: ubuntu-22.04
 
-    # Container gives a consistent OS + ROS tooling environment and reduces apt flakiness.
-    # The action docs recommend a prepared base container image. [4](https://amdcloud.sharepoint.com/sites/amd-aecg/SitePages/Say-Hello-to-JIRA-8.20.11.aspx?web=1)
+    # Prepared container environment (recommended by action-ros-ci docs for Ubuntu builds)
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-jammy:latest
 
@@ -18,7 +17,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build & test
+      - name: Build & test (action-ros-ci)
+        id: ros_ci
         uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: humble
+
+      # Upload logs even when the job fails (so we can debug the real reason)
+      - name: Upload colcon logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: colcon-logs
+          path: ${{ steps.ros_ci.outputs.ros-workspace-directory-name }}/log
