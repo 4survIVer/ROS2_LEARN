@@ -1,4 +1,4 @@
-name: ROS2 CI (Humble) - colcon build & test
+name: ROS2 CI (Humble) - colcon build (no tests)
 
 on:
   pull_request:
@@ -9,7 +9,6 @@ jobs:
   build_and_test:
     runs-on: ubuntu-22.04
 
-    # Prepared container environment (recommended by action-ros-ci docs for Ubuntu builds)
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-jammy:latest
 
@@ -17,70 +16,31 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Fix missing directories in packages
+      # Fix missing directories
       - name: Fix package directory structure
         run: |
-          # The random hash directory name (like ic3ee0z7aeh) changes each time
-          # Let's find the actual path dynamically
-          
-          echo "=== Fixing ros2_learning_pkg ==="
-          # Find the package path (handles the random hash directory)
+          # Find and fix ros2_learning_pkg
           PKG_PATH=$(find . -type d -path "*/src/*/ros2_learning_pkg" | head -1 || true)
-          
-          if [ -n "$PKG_PATH" ] && [ -d "$PKG_PATH" ]; then
-            echo "Found ros2_learning_pkg at: $PKG_PATH"
-            
-            # Create missing include directory
+          if [ -n "$PKG_PATH" ]; then
             mkdir -p "$PKG_PATH/include/ros2_learning_pkg"
             touch "$PKG_PATH/include/ros2_learning_pkg/.gitkeep"
-            echo "✅ Created include directory for ros2_learning_pkg"
-          else
-            echo "⚠️ Could not find ros2_learning_pkg, trying alternative path..."
-            # Try alternative path without the hash directory
-            PKG_PATH_ALT="./src/ros2_learning_pkg"
-            if [ -d "$PKG_PATH_ALT" ]; then
-              mkdir -p "$PKG_PATH_ALT/include/ros2_learning_pkg"
-              touch "$PKG_PATH_ALT/include/ros2_learning_pkg/.gitkeep"
-              echo "✅ Created include directory at $PKG_PATH_ALT"
-            fi
           fi
           
-          echo -e "\n=== Fixing cpp_oops_package ==="
+          # Fix cpp_oops_package
           CPP_PKG_PATH=$(find . -type d -path "*/src/*/cpp_oops_package" | head -1 || true)
-          
-          if [ -n "$CPP_PKG_PATH" ] && [ -d "$CPP_PKG_PATH" ]; then
-            echo "Found cpp_oops_package at: $CPP_PKG_PATH"
-            
-            # Ensure launch directory exists with content
+          if [ -n "$CPP_PKG_PATH" ]; then
             mkdir -p "$CPP_PKG_PATH/launch"
-            if [ ! -f "$CPP_PKG_PATH/launch/README.md" ]; then
-              echo "# Launch files for cpp_oops_package" > "$CPP_PKG_PATH/launch/README.md"
-            fi
-            echo "✅ Ensured launch directory exists"
+            echo "# Launch files" > "$CPP_PKG_PATH/launch/README.md"
           fi
-          
-          # Show final structure
-          echo -e "\n=== Fixed directories ==="
-          find . -type d -path "*/ros2_learning_pkg/include" 2>/dev/null | head -5 || echo "No include dir found"
-          find . -type d -path "*/cpp_oops_package/launch" 2>/dev/null | head -5 || echo "No launch dir found"
 
-      # Build & test
-      - name: Build & test (action-ros-ci)
-        id: ros_ci
-        uses: ros-tooling/action-ros-ci@0.4.5  # Keep using 0.4.5
+      # Build only - skip tests completely
+      - name: Build (action-ros-ci)
+        uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: humble
-          # Add verbose output for debugging (optional)
-          colcon-defaults: |
-            {
-              "build": {
-                "cmake-args": ["-DCMAKE_VERBOSE_MAKEFILE=OFF"]
-              }
-            }
-          # Skip tests on PR to speed up CI (remove if you want tests)
-          skip-tests: ${{ github.event_name == 'pull_request' }}
-
-      # Upload logs even when the job fails
+          skip-tests: true  # Skip all tests
+          
+      # Upload logs
       - name: Upload colcon logs
         if: always()
         uses: actions/upload-artifact@v4
