@@ -39,8 +39,8 @@ install(TARGETS
 
 # Install launch files
 install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}
+  launch/
+  DESTINATION share/${PROJECT_NAME/launch}
 )
 
 # Export dependencies for other packages

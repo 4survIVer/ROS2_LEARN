@@ -340,6 +340,7 @@ install(DIRECTORY config/
 ament_export_dependencies(
   rclcpp
   std_msgs
+  rclcpp_action
   geometry_msgs
   example_interfaces
   rosidl_default_runtime

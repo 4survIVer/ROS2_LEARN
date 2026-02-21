@@ -36,6 +36,8 @@
   <depend>example_interfaces</depend>
   <depend>action_msgs</depend>
   <depend>unique_identifier_msgs</depend>
+  <depend>rclcpp_action</depend>
+
   
    <!-- CUSTOM MESSAGE GENERATION - NOW ACTIVATED -->
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
