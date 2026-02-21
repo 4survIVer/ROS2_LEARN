@@ -1,36 +1,24 @@
 name: ROS2 CI (Humble) - colcon build & test
-# name: This is what you’ll see in the GitHub "Actions" tab. 
 
 on:
   pull_request:
-    # pull_request: Run CI for PRs so failures are caught before merging.
   push:
     branches: [ main ]
-    # branches: Limit push-trigger to main so you don't run twice (once on feature push + once on PR).
-    # Alternative: remove branches filter to run on every branch push.
 
 jobs:
   build_and_test:
     runs-on: ubuntu-22.04
-    # runs-on: GitHub-hosted runner OS. Ubuntu 22.04 matches ROS2 Humble's common base (Jammy).
-    # Alternative: use ubuntu-latest, but that may change OS version over time.
+
+    # Run inside a pre-configured ROS container (stability + reproducibility).
+    # setup-ros docs recommend Docker for less flakiness. [5](https://www.docker.com/trainings/)
+    container:
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-jammy:latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        # uses: Runs a reusable GitHub Action.
-        # checkout: pulls your repository code into the runner workspace.
 
-      - name: Setup ROS 2 (Humble) tools and environment
-        uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: humble
-        # setup-ros installs ROS tooling; it will not install ROS by default unless you pass required-ros-distributions. 
-        # required-ros-distributions: tells the action to install that ROS distro (here: humble). 
-
-      - name: Build and test with colcon (action-ros-ci)
-        uses: ros-tooling/action-ros-ci@v0.3
+      - name: Build & Test (ROS Tooling action)
+        uses: ros-tooling/action-ros-ci@v0.4.5
         with:
           target-ros2-distro: humble
-        # action-ros-ci builds & tests a ROS/ROS2 workspace using colcon. 
-        # target-ros2-distro: which ROS2 distro to target for the build/test environment.
