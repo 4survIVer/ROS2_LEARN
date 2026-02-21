@@ -9,8 +9,8 @@ jobs:
   build_and_test:
     runs-on: ubuntu-22.04
 
-    # Run inside a pre-configured ROS container (stability + reproducibility).
-    # setup-ros docs recommend Docker for less flakiness. [5](https://www.docker.com/trainings/)
+    # Container gives a consistent OS + ROS tooling environment and reduces apt flakiness.
+    # The action docs recommend a prepared base container image. [4](https://amdcloud.sharepoint.com/sites/amd-aecg/SitePages/Say-Hello-to-JIRA-8.20.11.aspx?web=1)
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-jammy:latest
 
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build & Test (ROS Tooling action)
-        uses: ros-tooling/action-ros-ci@v0.4.5
+      - name: Build & test
+        uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: humble
