@@ -1,0 +1,16 @@
+# colcon/CMake output (ROS2)
+build/
+install/
+log/
+
+# common editor/IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+
+# python cache (ROS2 often has python tooling/scripts too)
+__pycache__/
+*.pyc

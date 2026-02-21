@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+  main_tree.xml
+  Main behavior tree that uses subtrees
+  
+  Shows:
+  1. Loading subtrees from external files
+  2. Using SubTree nodes
+  3. Hierarchical tree structure
+  4. Parameter passing to subtrees
+-->
+
+<root>
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <!-- Initialize mission parameters using SetBlackboard -->
+      <SetBlackboard value="delivery" output_key="mission_name"/>
+      <SetBlackboard value="kitchen" output_key="mission_location"/>
+      <SetBlackboard value="deliver_package" output_key="mission_task"/>
+      
+      <!-- Mission 1: Deliver to kitchen -->
+      <SubTree ID="CompleteMission"
+               mission_name="Kitchen Delivery"
+               mission_location="kitchen"
+               mission_task="deliver_package"/>
+      
+      <!-- Mission 2: Deliver to bedroom -->
+      <SubTree ID="CompleteMission"
+               mission_name="Bedroom Delivery"
+               mission_location="bedroom"
+               mission_task="deliver_medicine"/>
+      
+      <!-- Mission 3: Office inspection -->
+      <SubTree ID="CompleteMission"
+               mission_name="Office Inspection"
+               mission_location="office"
+               mission_task="inspect_equipment"/>
+      
+      <!-- Final shutdown -->
+      <AnnounceAction message="All missions completed! Shutting down."/>
+    </Sequence>
+  </BehaviorTree>
+</root>

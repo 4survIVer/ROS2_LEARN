@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypelayout="1.0"?>
+<package format="3">
+  <name>cpp_oops_package</name>
+  <version>0.0.0</version>
+  <description>Learning C++ OOPs concepts with ROS2 through practical examples</description>
+  <maintainer email="pavan@todo.todo">pavan</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build tool and build dependencies -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Dependencies for ROS2 core functionality -->
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+
+  <!-- REMOVED: build_type tag as it's not needed in format 3 -->
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

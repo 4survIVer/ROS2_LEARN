@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+  subtree_components.xml
+  Contains reusable SubTree definitions
+  
+  Key concepts:
+  1. <BehaviorTree ID="..."> defines a reusable tree
+  2. SubTrees can have their own ports
+  3. Can be loaded from external files
+  4. Can be nested (SubTrees within SubTrees)
+-->
+
+<root>
+  <!-- ============================================
+       SUBTREE 1: Basic Navigation Sequence
+       Moves to a location and performs an action
+  ============================================ -->
+   <BehaviorTree ID="NavigateToLocation">
+    <Sequence>
+      <AnnounceAction message="Starting navigation to {location}"/>
+      <MoveToAction target="{location}" distance_output="{traveled}"/>
+      <WaitAction duration="2"/>
+      <AnnounceAction message="Arrived at {location}"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- ============================================
+       SUBTREE 2: Check Battery and Safety
+       Reusable safety checks
+  ============================================ -->
+  <BehaviorTree ID="SafetyChecks">
+    <Sequence>
+      <CheckBattery min_level="{min_battery}" battery_status="{battery_ok}"/>
+      <CheckEnvironment location="{location}" is_safe="{environment_safe}"/>
+      <LogAction message="Safety checks completed. Battery: {battery_ok}, Environment: {environment_safe}"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- ============================================
+       SUBTREE 3: Perform Task with Retry
+       Tries to perform a task with retry logic
+  ============================================ -->
+  <BehaviorTree ID="PerformTaskWithRetry">
+    <Fallback>
+      <PerformTaskAction task_type="{task}" result="{task_result}"/>
+      <RetryUntilSuccessful num_attempts="3">
+        <Sequence>
+          <WaitAction duration="1"/>
+          <AnnounceAction message="Retrying task: {task}"/>
+          <PerformTaskAction task_type="{task}" result="{task_result}"/>
+        </Sequence>
+      </RetryUntilSuccessful>
+    </Fallback>
+  </BehaviorTree>
+  
+  <!-- ============================================
+       SUBTREE 4: Complete Mission
+       Combines multiple subtrees for a complete mission
+  ============================================ -->
+  <BehaviorTree ID="CompleteMission">
+    <Sequence>
+      <SubTree ID="SafetyChecks" location="{mission_location}" min_battery="20"/>
+      <SubTree ID="NavigateToLocation" location="{mission_location}"/>
+      <SubTree ID="PerformTaskWithRetry" task="{mission_task}"/>
+      <SubTree ID="NavigateToLocation" location="base"/>
+      <AnnounceAction message="Mission '{mission_name}' completed successfully!"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<root>
+  <!-- 
+    Robot Delivery System Behavior Trees
+    This file contains reusable behavior tree components for the delivery robot.
+    Each <BehaviorTree> tag defines a separate tree that can be used as a SubTree.
+  -->
+  
+  <!-- ============================================= -->
+  <!-- REUSABLE COMPONENTS -->
+  <!-- ============================================= -->
+  
+  <!-- Safe navigation with obstacle avoidance -->
+  <BehaviorTree ID="SafeNavigate">
+    <Sequence>
+      <!-- Check if destination is reachable -->
+      <IsDestinationReachable destination="{target}" is_reachable="{reachable}"/>
+      
+      <!-- Navigate with retry logic -->
+      <RetryUntilSuccessful num_attempts="2">
+        <NavigateToAction target_location="{target}"/>
+      </RetryUntilSuccessful>
+      
+      <!-- Handle obstacles if encountered -->
+      <Fallback>
+        <AlwaysSuccess/>  <!-- Normally no obstacles -->
+        <Sequence>
+          <AvoidObstacleAction obstacle_type="dynamic"/>
+          <NavigateToAction target_location="{target}"/>
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- Battery check and charge if needed -->
+  <BehaviorTree ID="BatteryCheck">
+    <Fallback>
+      <!-- If battery is low, charge it -->
+      <Sequence>
+        <IsBatteryLow threshold="30.0" current_level="{battery_level}" is_low="{battery_low}"/>
+        <ChargeBatteryAction charge_amount="50.0" new_battery_level="{battery_level}"/>
+      </Sequence>
+      
+      <!-- Otherwise continue -->
+      <AlwaysSuccess/>
+    </Fallback>
+  </BehaviorTree>
+  
+  <!-- Complete delivery sequence for a single package -->
+  <BehaviorTree ID="DeliverPackage">
+    <Sequence>
+      <!-- Announce which package we're delivering -->
+      <AlwaysSuccess name="AnnouncePackageDelivery"/>
+      
+      <!-- Navigate to pickup location -->
+      <SubTree ID="SafeNavigate" target="{pickup_location}"/>
+      
+      <!-- Pick up the package -->
+      <RetryUntilSuccessful num_attempts="2">
+        <PickPackageAction package_id="{package_id}" location="{pickup_location}"/>
+      </RetryUntilSuccessful>
+      
+      <!-- Navigate to delivery location -->
+      <SubTree ID="SafeNavigate" target="{delivery_location}"/>
+      
+      <!-- Place/deliver the package -->
+      <PlacePackageAction package_id="{package_id}" destination="{delivery_location}"/>
+      
+      <!-- Update package status -->
+      <AlwaysSuccess name="MarkPackageDelivered"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- Emergency handling routine -->
+  <BehaviorTree ID="HandleEmergency">
+    <Sequence>
+      <!-- Stop all motion immediately -->
+      <AlwaysSuccess name="EmergencyStop"/>
+      
+      <!-- Assess situation -->
+      <AlwaysSuccess name="AssessEmergency"/>
+      
+      <!-- If battery is critical, charge immediately -->
+      <Fallback>
+        <Sequence>
+          <IsBatteryLow threshold="10.0" current_level="{battery_level}"/>
+          <ChargeBatteryAction charge_amount="20.0" new_battery_level="{battery_level}"/>
+        </Sequence>
+        <AlwaysSuccess/>
+      </Fallback>
+      
+      <!-- Return to base if possible -->
+      <NavigateToAction target_location="base"/>
+      
+      <!-- Report emergency handled -->
+      <AlwaysSuccess name="EmergencyResolved"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- ============================================= -->
+  <!-- MAIN DELIVERY TREE -->
+  <!-- ============================================= -->
+  
+  <BehaviorTree ID="RobotDeliveryMain">
+    <Sequence>
+      <!-- Initial system checks -->
+      <Sequence>
+        <!-- Check for emergencies -->
+        <Inverter>
+          <IsEmergencyStop emergency_active="{emergency}"/>
+        </Inverter>
+        
+        <!-- Check and maintain battery -->
+        <SubTree ID="BatteryCheck"/>
+        
+        <!-- Announce mission start -->
+        <AlwaysSuccess name="MissionStart"/>
+      </Sequence>
+      
+      <!-- Main delivery loop -->
+      <Repeat num_cycles="3">
+        <Sequence>
+          <!-- Monitor for emergencies during each delivery -->
+          <Inverter>
+            <IsEmergencyStop emergency_active="{emergency}"/>
+          </Inverter>
+          
+          <!-- Execute delivery (example with hardcoded values) -->
+          <!-- In real system, these would come from task queue -->
+          <SubTree ID="DeliverPackage" 
+                  package_id="PKG001" 
+                  pickup_location="warehouse" 
+                  delivery_location="office_a"/>
+          
+          <!-- Check battery after each delivery -->
+          <SubTree ID="BatteryCheck"/>
+        </Sequence>
+      </Repeat>
+      
+      <!-- Final return to base -->
+      <NavigateToAction target_location="base"/>
+      
+      <!-- Mission complete -->
+      <AlwaysSuccess name="MissionComplete"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- ============================================= -->
+  <!-- TEST TREES -->
+  <!-- ============================================= -->
+  
+  <!-- Test navigation system -->
+  <BehaviorTree ID="TestNavigation">
+    <Sequence>
+      <AlwaysSuccess name="StartNavigationTest"/>
+      <SubTree ID="SafeNavigate" target="office_a"/>
+      <SubTree ID="SafeNavigate" target="lab_b"/>
+      <SubTree ID="SafeNavigate" target="warehouse"/>
+      <SubTree ID="SafeNavigate" target="base"/>
+      <AlwaysSuccess name="NavigationTestComplete"/>
+    </Sequence>
+  </BehaviorTree>
+  
+  <!-- Test battery management -->
+  <BehaviorTree ID="TestBattery">
+    <Sequence>
+      <AlwaysSuccess name="StartBatteryTest"/>
+      <SubTree ID="BatteryCheck"/>
+      <!-- Drain battery a bit -->
+      <AlwaysSuccess name="SimulateBatteryDrain"/>
+      <SubTree ID="BatteryCheck"/>
+      <!-- Drain more -->
+      <AlwaysSuccess name="SimulateMoreBatteryDrain"/>
+      <SubTree ID="BatteryCheck"/>
+      <AlwaysSuccess name="BatteryTestComplete"/>
+    </Sequence>
+  </BehaviorTree>
+  
+</root>
