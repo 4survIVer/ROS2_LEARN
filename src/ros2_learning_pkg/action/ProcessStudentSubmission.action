@@ -1,0 +1,36 @@
+# =============================================================================
+# ProcessStudentSubmission.action
+# =============================================================================
+#
+# ACTION: For long-running student assignment processing
+# 
+# USECASE: Simulates processing a student submission (grading, plagiarism check, etc.)
+# This takes time and provides progress updates
+#
+
+# =============================================================================
+# GOAL - What we want to accomplish
+# =============================================================================
+string student_id
+string assignment_name
+string submission_content
+float32 processing_time_seconds  # How long this should take to process
+
+---
+# =============================================================================  
+# RESULT - Final outcome
+# =============================================================================
+float32 final_grade
+string detailed_feedback
+string plagiarism_status
+bool success
+string completion_message
+
+---
+# =============================================================================
+# FEEDBACK - Progress updates during execution  
+# =============================================================================
+float32 progress_percentage    # 0.0 to 100.0
+string current_stage          # Current processing stage
+string status_message         # Detailed status update
+bool is_plagiarism_detected   # Early plagiarism detection

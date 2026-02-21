@@ -1,0 +1,12 @@
+# StudentGrade.srv - Custom service for student grade management
+# Request part (what the client sends)
+string student_id        # Unique student identifier
+string assignment_name   # Name of the assignment to grade
+
+---
+# Response part (what the server returns)
+float32 grade           # Numerical grade (0.0 - 100.0)
+string feedback         # Detailed feedback for the student
+bool success           # Whether the grading was successful
+string message         # Additional status message
+
